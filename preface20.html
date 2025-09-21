@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Voxsnap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3, #42a5f5, #ff9800);
+            animation: gradientAnimation 4s linear infinite;
+            overflow: hidden;
+            position: relative;
+            text-align: center;
+            color: white;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .back-button {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #ff4081, #42a5f5, #ffeb3b, #ff9800);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+        }
+
+        .back-button::before {
+            content: '↩';
+            font-size: 24px;
+            color: white;
+        }
+
+        .back-button:hover {
+            transform: scale(1.1);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #ffeb3b;
+        }
+
+        .info {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .info strong {
+            display: block;
+            margin-top: 10px;
+            color: #ffeb3b;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3, #42a5f5, #ff9800);
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ff5e62, #ff9966, #42a5f5);
+        }
+
+        /* Animated Shapes */
+        .shape {
+            position: absolute;
+            opacity: 0.4;
+            animation: floatAnimation 6s infinite alternate ease-in-out;
+        }
+
+        .shape:nth-child(1) { top: 10%; left: 10%; width: 50px; height: 50px; background: white; border-radius: 50%; animation-duration: 4s; }
+        .shape:nth-child(2) { top: 30%; left: 80%; width: 60px; height: 60px; background: white; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); animation-duration: 6s; }
+        .shape:nth-child(3) { top: 70%; left: 20%; width: 45px; height: 45px; background: white; border-radius: 10px; animation-duration: 5s; }
+        .shape:nth-child(4) { top: 85%; left: 60%; width: 35px; height: 35px; background: white; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); animation-duration: 7s; }
+        .shape:nth-child(5) { top: 40%; left: 50%; width: 50px; height: 50px; background: white; border-radius: 50%; animation-duration: 5.5s; }
+
+        @keyframes floatAnimation {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button" onclick="location.href='login20.html'"></div>
+    
+    <div class="container">
+        <h3>Welcome to Voxsnap!</h3>
+        <p class="info">Transform your documents into audio and summaries with ease.</p>
+        <p class="info"><strong>What We Offer:</strong></p>
+        <p class="info">
+            <strong>Easy Uploads:</strong> PDFs, Word docs, and more.<br>
+            <strong>Audio Conversion:</strong> Listen on the go.<br>
+            <strong>Quick Summaries:</strong> Grasp main points fast.<br>
+            <strong>Key Concepts:</strong> Focus on crucial ideas.<br>
+            <strong>Chatbot Help:</strong> Definitions and explanations in real-time.
+			<strong>Expected Questions:</strong>Extracts the expected questions<br>
+            <strong>Expected Questions:</strong>Extracts the expected questions<br>
+        </p>
+		
+        <button onclick="location.href='options20.html'">Get Started</button>
+        
+    </div>
+    
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        function getStarted() {
+            alert("Redirecting to the main page...");
+        }
+    </script>
+</body>
+</html>   

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multicolor Audio Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: url('https://images.unsplash.com/photo-1546435770-a3e426bf472b') no-repeat center center/cover;
+      background-color: #f0f8ff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .options-container {
+      position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.3);
+      padding: 30px;
+      border-radius: 25px;
+      box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 450px;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background-image: url('https://www.transparenttextures.com/patterns/grey_wash_wall.png');
+      background-size: contain;
+    }
+
+    .options-container h1 {
+      font-size: 42px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      font-family: 'Lobster', cursive;
+    }
+
+    .stylish-button {
+      width: 100%;
+      padding: 16px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 35px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .stylish-button::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      transition: left 0.3s ease;
+    }
+
+    .stylish-button:hover::before {
+      left: 0;
+    }
+
+    .blue-btn {
+      background: linear-gradient(135deg, #1e90ff, #00bfff);
+      color: white;
+    }
+
+    .green-btn {
+      background: linear-gradient(135deg, #32cd32, #00ff7f);
+      color: white;
+    }
+
+    .purple-btn {
+      background: linear-gradient(135deg, #ba55d3, #9400d3);
+      color: white;
+    }
+
+    .orange-btn {
+      background: linear-gradient(135deg, #ff7f50, #ff6347);
+      color: white;
+    }
+
+    .pink-btn {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      color: white;
+    }
+
+    .stylish-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-button {
+      position: absolute;
+      padding: 10px;
+      font-size: 18px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .nav-button img {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #ff7f50, #ff1493, #00ced1, #32cd32);
+      border-radius: 50%;
+      padding: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s ease, filter 0.1s ease;
+    }
+
+    .nav-button:active img {
+      transform: scale(1.2);
+      filter: brightness(1.5);
+      animation: blink 0.2s 2 alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .back-button {
+      top: 20px;
+      left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <button class="nav-button back-button" onclick="location.href='preface20.html'">
+    <img src="https://cdn-icons-png.flaticon.com/512/93/93634.png" alt="Back">
+  </button>
+  <div class="options-container">
+    <h1>Choose an Option</h1>
+    <div class="space-y-4">
+      <button class="stylish-button blue-btn" onclick="location.href='audio20.html'">File to Audio</button>
+      <button class="stylish-button green-btn" onclick="location.href='summary20.html'">Summary with Audio</button>
+      <button class="stylish-button purple-btn" onclick="location.href='keypoints20.html'">Key Points with Audio</button>
+      <button class="stylish-button orange-btn" onclick="location.href='expectedquestions20.html'">Expected Questions</button>
+      <button class="stylish-button pink-btn" onclick="location.href='quiz20.html'">Generate Quiz</button>
+    </div>
+  </div>
+</body>
+</html>

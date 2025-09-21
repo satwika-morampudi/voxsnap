@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text Reader and Word Meaning Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      height: 100vh;
+      background: linear-gradient(135deg, #74ebd5, #acb6e5, #ff9a9e, #fad0c4);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .home-button, .back-button {
+      position: absolute;
+      top: 20px;
+      padding: 10px 20px;
+      background-color: #ffffffdd;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+
+    .home-button {
+      right: 20px;
+    }
+
+    .back-button {
+      left: 20px;
+    }
+
+    .home-button:hover,
+    .back-button:hover,
+    .feedback-button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .section {
+      background: #ffffffaa;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      width: 90%;
+      max-width: 700px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    input[type="file"], input[type="text"], button, select {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #text-display, #summary-display, #chatbox {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      max-width: 650px;
+      width: 100%;
+      font-size: 18px;
+      line-height: 1.6;
+      overflow-y: auto;
+    }
+
+    .highlight {
+      background-color: yellow;
+    }
+
+    #loader, #file-info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    #chatbox {
+      height: 200px;
+    }
+
+    .feedback-button {
+      margin: 40px 0;
+      padding: 15px 30px;
+      background-color: #ffffffdd;
+      border: none;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Back and Home Buttons -->
+  <button class="back-button" onclick="goBack()">Back</button>
+  <button class="home-button" onclick="location.href='options20.html'">Home</button>
+
+  <h1>Text Reader & Word Meaning Chatbot</h1>
+
+  <!-- Text Reader Section -->
+  <div class="section">
+    <h2>📖 Text Reader with Summary</h2>
+
+    <div>
+      <input type="file" id="file-input" accept=".pdf, .docx, .txt, .xml">
+      <div id="file-info"></div>
+      <div id="loader" style="display:none;">Loading...</div>
+    </div>
+
+    <div>
+      <select id="voiceSelect"></select><br>
+      <button onclick="startReading()">Start Reading</button>
+      <button onclick="pauseReading()">Pause</button>
+      <button onclick="stopReading()">Stop</button>
+    </div>
+
+    <div id="text-display" style="height: 300px;"></div>
+
+    <div>
+      <button onclick="generateSummary()">Generate Summary</button>
+    </div>
+
+    <div id="summary-display"></div>
+
+    <div>
+      <button onclick="downloadSummary()">Download Summary</button>
+      <button onclick="readSummary()">Read Summary</button>
+      <button onclick="deleteFile()">Delete File</button>
+    </div>
+  </div>
+
+  <!-- Chatbot Section -->
+  <div class="section">
+    <h2>💬 Word Meaning Chatbot</h2>
+
+    <div>
+      <input type="text" id="wordInput" placeholder="Enter a word...">
+      <button onclick="searchMeaning()">Search</button>
+    </div>
+
+    <div id="chatbox"></div>
+  </div>
+
+  <!-- Feedback Button -->
+  <button class="feedback-button" onclick="location.href='feedback20.html'">Give Feedback</button>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+
+  <!-- JavaScript -->
+  <script>
+    function goHome() {
+      location.reload();
+    }
+
+    function goBack() {
+      location.reload();
+    }
+
+    function giveFeedback() {
+      alert("Thank you for your feedback! (Feature coming soon)");
+    }
+
+    const fileInput = document.getElementById('file-input');
+    const textDisplay = document.getElementById('text-display');
+    const summaryDisplay = document.getElementById('summary-display');
+    const loader = document.getElementById('loader');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const fileInfo = document.getElementById('file-info');
+
+    let speech;
+    let voices = [];
+
+    function populateVoices() {
+      voices = window.speechSynthesis.getVoices();
+      voiceSelect.innerHTML = '';
+      voices.forEach((voice, i) => {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        fileInfo.textContent = `Selected File: ${file.name}`;
+        loader.style.display = 'block';
+        const text = await extractText(file);
+        loader.style.display = 'none';
+        textDisplay.textContent = text;
+      }
+    });
+
+    async function extractText(file) {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async function (event) {
+          try {
+            if (file.name.endsWith('.pdf')) {
+              const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
+              let text = '';
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                text += content.items.map(item => item.str).join(' ') + ' ';
+              }
+              resolve(text);
+            } else if (file.name.endsWith('.docx')) {
+              const result = await mammoth.extractRawText({ arrayBuffer: event.target.result });
+              resolve(result.value);
+            } else if (file.name.endsWith('.txt') || file.name.endsWith('.xml')) {
+              const textDecoder = new TextDecoder();
+              resolve(textDecoder.decode(event.target.result));
+            } else {
+              alert('Unsupported file type!');
+              reject();
+            }
+          } catch (error) {
+            alert('Error reading file.');
+            reject();
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function startReading() {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.resume();
+        return;
+      }
+
+      const text = textDisplay.textContent;
+      speech = new SpeechSynthesisUtterance(text);
+
+      const selectedVoice = voices[voiceSelect.value];
+      if (selectedVoice) {
+        speech.voice = selectedVoice;
+      }
+
+      speech.onboundary = (event) => {
+        const index = event.charIndex;
+        highlightChar(index);
+      };
+
+      speechSynthesis.speak(speech);
+    }
+
+    function pauseReading() {
+      if (speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+      }
+    }
+
+    function stopReading() {
+      speechSynthesis.cancel();
+      removeHighlight();
+    }
+
+    function highlightChar(index) {
+      const text = textDisplay.textContent;
+      textDisplay.innerHTML = text.substring(0, index) + '<span class="highlight">' + text.charAt(index) + '</span>' + text.substring(index + 1);
+    }
+
+    function removeHighlight() {
+      textDisplay.innerHTML = textDisplay.textContent;
+    }
+
+    function generateSummary() {
+      const text = textDisplay.textContent;
+      const sentences = text.match(/[^\.\!\?]+[\.\!\?]+/g) || [];
+      if (sentences.length === 0) {
+        summaryDisplay.textContent = "No significant content found.";
+        return;
+      }
+
+      const wordFreq = {};
+      text.toLowerCase().split(/\W+/).forEach(word => {
+        if (word.length > 3) {
+          wordFreq[word] = (wordFreq[word] || 0) + 1;
+        }
+      });
+
+      const scoredSentences = sentences.map(sentence => {
+        const words = sentence.toLowerCase().split(/\W+/);
+        let score = 0;
+        words.forEach(word => {
+          if (wordFreq[word]) score += wordFreq[word];
+        });
+        return { sentence, score };
+      });
+
+      scoredSentences.sort((a, b) => b.score - a.score);
+
+      const bestSentences = scoredSentences.slice(0, Math.min(5, scoredSentences.length));
+      const summary = bestSentences.map(item => item.sentence.trim()).join(' ');
+
+      summaryDisplay.textContent = "Summary:\n" + summary;
+    }
+
+    function downloadSummary() {
+      const summary = summaryDisplay.textContent;
+      const blob = new Blob([summary], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'summary.txt';
+      link.click();
+    }
+
+    function readSummary() {
+      const summary = summaryDisplay.textContent;
+      if (!summary.trim()) {
+        alert('No summary to read!');
+        return;
+      }
+
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+
+      const summarySpeech = new SpeechSynthesisUtterance(summary);
+      const selectedVoice = voices[voiceSelect.value];
+      if (selectedVoice) {
+        summarySpeech.voice = selectedVoice;
+      }
+      speechSynthesis.speak(summarySpeech);
+    }
+
+    function deleteFile() {
+      fileInput.value = "";
+      textDisplay.textContent = "";
+      summaryDisplay.textContent = "";
+      fileInfo.textContent = "";
+      stopReading();
+    }
+
+    async function searchMeaning() {
+      const word = document.getElementById("wordInput").value.trim();
+      if (!word) {
+        alert("Please enter a word!");
+        return;
+      }
+      const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data[0] && data[0].meanings) {
+          const meanings = data[0].meanings.map(meaning => meaning.definitions[0].definition).join("\n- ");
+          document.getElementById("chatbox").textContent = `Meaning of "${word}":\n- ${meanings}`;
+        } else {
+          document.getElementById("chatbox").textContent = `No meaning found for "${word}".`;
+        }
+      } catch (error) {
+        document.getElementById("chatbox").textContent = "Error fetching meaning.";
+      }
+    }
+  </script>
+</body>
+
+</html>

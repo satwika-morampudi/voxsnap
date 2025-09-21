@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz Generator from File 📄🧠</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(to right, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #file-section, #quiz-section {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 700px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+    }
+    .question-block {
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    button {
+      padding: 8px 15px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .nav-buttons { display: flex; justify-content: center; margin: 15px 0; gap: 20px; }
+    #score-display {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    /* Feedback button fixed at bottom center */
+    #feedback-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #7928ca, #ff0080, #ff8c00);
+      background-size: 300% 300%;
+      animation: gradientShift 6s ease infinite;
+      color: white;
+      font-weight: bold;
+      padding: 14px 30px;
+      border-radius: 50px;
+      box-shadow: 0 8px 20px rgba(255, 0, 128, 0.6);
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: box-shadow 0.3s ease;
+      z-index: 9999;
+    }
+    #feedback-button:hover {
+      box-shadow: 0 10px 30px rgba(255, 0, 128, 0.9);
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Auto Quiz from Your File 📝</h1>
+  <div class="nav-buttons">
+    <button onclick="location.href='options20.html'">Home</button>
+    <button onclick="goBack()">Back</button>
+  </div>
+
+  <div id="file-section">
+    <h3>Upload a File</h3>
+    <input type="file" id="file-input" />
+  </div>
+
+  <div id="quiz-section">
+    <h3>Quiz Questions</h3>
+    <div id="quiz-container"></div>
+    <button onclick="submitQuiz()">Submit Quiz</button>
+    <div id="score-display"></div>
+  </div>
+
+  <!-- Give Feedback Button -->
+  <button id="feedback-button" onclick="location.href='feedback20.html'">💬 Give Feedback</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <script>
+    let uploadedText = '';
+
+    function goHome() { window.location.href = "#"; }
+    function goBack() { window.location.reload(); }
+
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        uploadedText = await extractText(file);
+        generateQuiz(uploadedText);
+      }
+    });
+
+    async function extractText(file) {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async (e) => {
+          if (file.name.endsWith('.pdf')) {
+            const pdf = await pdfjsLib.getDocument({data: e.target.result}).promise;
+            let text = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              text += content.items.map(item => item.str).join(' ') + ' ';
+            }
+            resolve(text);
+          } else if (file.name.endsWith('.docx')) {
+            const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+            resolve(result.value);
+          } else if (file.name.endsWith('.txt') || file.name.endsWith('.xml')) {
+            resolve(new TextDecoder().decode(e.target.result));
+          } else {
+            alert('Unsupported file type!');
+            reject();
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function generateQuiz(text) {
+      const sentences = (text.match(/[^.!?]+[.!?]+/g) || []).slice(0, 5); // pick 5
+      const quizContainer = document.getElementById('quiz-container');
+      quizContainer.innerHTML = '';
+
+      sentences.forEach((sentence, index) => {
+        const words = sentence.match(/\b\w{4,}\b/g) || [];
+        const keyword = words[Math.floor(Math.random() * words.length)];
+        const question = sentence.replace(new RegExp(`\\b${keyword}\\b`, 'i'), '_____');
+
+        const options = [keyword];
+        while (options.length < 4) {
+          const randWord = words[Math.floor(Math.random() * words.length)];
+          if (!options.includes(randWord)) options.push(randWord);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const block = document.createElement('div');
+        block.className = 'question-block';
+        block.innerHTML = `
+          <div><strong>Q${index + 1}:</strong> ${question}</div>
+          ${options.map(opt => `
+            <label><input type="radio" name="q${index}" value="${opt}"> ${opt}</label><br>`).join('')}
+        `;
+        block.dataset.answer = keyword;
+        quizContainer.appendChild(block);
+      });
+    }
+
+    function submitQuiz() {
+      const blocks = document.querySelectorAll('.question-block');
+      let score = 0;
+      blocks.forEach((block, index) => {
+        const correct = block.dataset.answer;
+        const selected = block.querySelector('input[type=radio]:checked');
+        if (selected && selected.value === correct) score++;
+      });
+      document.getElementById('score-display').textContent = `You scored ${score} out of ${blocks.length}!`;
+    }
+
+    // Feedback button click handler
+    function openFeedback() {
+      alert("Thanks for your interest! You can add a feedback form here.");
+      // Or open your feedback modal/page here
+    }
+  </script>
+</body>
+</html>

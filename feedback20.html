@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vibrant Feedback Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animated multi-color background using gradient animation */
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .animated-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(270deg, #ff0080, #7928ca, #00d2ff, #f9ce00);
+      background-size: 800% 800%;
+      animation: gradientShift 30s ease infinite;
+      z-index: -1;
+    }
+
+    @keyframes gradientShift {
+      0%{background-position:0% 50%;}
+      50%{background-position:100% 50%;}
+      100%{background-position:0% 50%;}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="animated-bg"></div>
+
+  <div class="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12 max-w-4xl mx-auto text-white">
+    <header class="mb-16 text-center max-w-lg">
+      <h1 class="text-5xl font-extrabold mb-4 drop-shadow-lg">Welcome to Our Feedback Hub</h1>
+      <p class="text-lg text-purple-100/90 drop-shadow-md">Your voice matters! Help us improve by sharing your thoughts.</p>
+    </header>
+
+    <!-- Feedback Button -->
+    <button
+      id="openFeedbackBtn"
+      class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-red-500 hover:via-pink-500 hover:to-purple-500 
+             text-white font-bold py-3 px-8 rounded-full shadow-xl transition-all duration-300 ease-in-out animate-pulse mb-20"
+    >
+      💬 Give Feedback
+    </button>
+
+    <main class="max-w-3xl space-y-10 text-white/90 text-center">
+      <section>
+        <h2 class="text-3xl font-semibold mb-3">Why Your Feedback Is Important</h2>
+        <p class="leading-relaxed text-lg">
+          Feedback lets us understand your needs and expectations better. It helps us build features and improve our services tailored just for you.
+        </p>
+      </section>
+      <section>
+        <h2 class="text-3xl font-semibold mb-3">How We Use Your Feedback</h2>
+        <p class="leading-relaxed text-lg">
+          Every suggestion is reviewed carefully. We prioritize changes that benefit the majority and keep you informed about upcoming improvements.
+        </p>
+      </section>
+      <section>
+        <h2 class="text-3xl font-semibold mb-3">Our Commitment</h2>
+        <p class="leading-relaxed text-lg">
+          We’re dedicated to transparency and action. Your feedback goes directly to our product team to create a better experience every day.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div
+    id="feedbackModal"
+    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50"
+    aria-hidden="true"
+  >
+    <div
+      class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+      <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-center text-purple-700">
+        We Value Your Feedback 💜
+      </h2>
+      <textarea
+        id="feedbackText"
+        placeholder="Share your thoughts..."
+        class="w-full p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4 h-32"
+      ></textarea>
+      <div class="flex justify-end gap-4">
+        <button
+          id="cancelBtn"
+          class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+        >
+          Cancel
+        </button>
+        <button
+          id="submitBtn"
+          onclick="location.href='thankyou20.html'"
+          class="bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold px-4 py-2 rounded-lg hover:opacity-90 transition"  
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const openBtn = document.getElementById('openFeedbackBtn');
+    const modal = document.getElementById('feedbackModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const feedbackText = document.getElementById('feedbackText');
+
+    openBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      feedbackText.focus();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      feedbackText.value = '';
+    });
+
+    submitBtn.addEventListener('click', () => {
+      const feedback = feedbackText.value.trim();
+      if (feedback === '') {
+        alert('Please enter your feedback before submitting.');
+        feedbackText.focus();
+        return;
+      }
+      console.log('User Feedback:', feedback);
+      alert('Thank you for your feedback!');
+      feedbackText.value = '';
+      modal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside modal content
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        feedbackText.value = '';
+      }
+    });
+
+    // Close modal on ESC key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        modal.classList.add('hidden');
+        feedbackText.value = '';
+      }
+    });
+  </script>
+
+</body>
+</html>

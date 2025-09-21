@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Meaning Chatbot + File Reader + Expected Questions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(to right, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #file-section, #chat-section, #questions-section {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 600px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+    }
+    #text-display, #chat-messages, #questions-display {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      border-radius: 5px;
+    }
+    .user-message { text-align: right; color: #007bff; margin-bottom: 8px; }
+    .bot-message { text-align: left; color: #333; margin-bottom: 8px; }
+    #chat-controls { margin-top: 10px; display: flex; gap: 10px; }
+    #chat-input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 8px 15px; border: none; background: #007bff; color: white; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .highlight { background-color: yellow; }
+    #popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+      box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+    }
+    .nav-buttons { display: flex; justify-content: center; margin: 15px 0; gap: 20px; }
+
+    /* Feedback Button Styling */
+    #feedback-section {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Expected Questions Generator & Word Chatbot 📚</h1>
+
+  <div class="nav-buttons">
+    <button onclick="location.href='options20.html'">Home</button>
+    <button onclick="goBack()">Back</button>
+  </div>
+
+  <div id="file-section">
+    <h3>Upload a File</h3>
+    <input type="file" id="file-input">
+    <select id="voiceSelect"></select>
+    <div id="text-display"></div>
+    <div style="margin-top: 10px;">
+      <button onclick="startReading()">Start</button>
+      <button onclick="pauseReading()">Pause</button>
+      <button onclick="stopReading()">Stop</button>
+      <button onclick="copyText()">Copy Text</button>
+    </div>
+  </div>
+
+  <div id="questions-section">
+    <h3>Expected Questions</h3>
+    <div id="questions-display"></div>
+  </div>
+
+  <div id="chat-section">
+    <h3>Chat with Bot (Type a word)</h3>
+    <div id="chat-messages"></div>
+    <div id="chat-controls">
+      <input type="text" id="chat-input" placeholder="Enter a word...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Feedback Section -->
+  <div id="feedback-section">
+    <button onclick="location.href='feedback20.html'">Give Feedback</button>
+  </div>
+
+  <!-- Popup -->
+  <div id="popup">Copied!</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <script>
+    let voices = [];
+    const textDisplay = document.getElementById('text-display');
+    const questionsDisplay = document.getElementById('questions-display');
+    const popup = document.getElementById('popup');
+    let uploadedText = '';
+
+    function goHome() { window.location.href = "#"; }
+    function goBack() { window.location.reload(); }
+
+    function populateVoices() {
+      voices = speechSynthesis.getVoices();
+      const voiceSelect = document.getElementById('voiceSelect');
+      voiceSelect.innerHTML = voices.map((voice, i) => `<option value="${i}">${voice.name} (${voice.lang})</option>`).join('');
+    }
+    speechSynthesis.onvoiceschanged = populateVoices;
+
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const text = await extractText(file);
+        uploadedText = text;
+        textDisplay.textContent = text;
+        generateQuestions(text);
+      }
+    });
+
+    async function extractText(file) {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async (e) => {
+          if (file.name.endsWith('.pdf')) {
+            const pdf = await pdfjsLib.getDocument({data: e.target.result}).promise;
+            let text = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              text += content.items.map(item => item.str).join(' ') + ' ';
+            }
+            resolve(text);
+          } else if (file.name.endsWith('.docx')) {
+            const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+            resolve(result.value);
+          } else if (file.name.endsWith('.txt') || file.name.endsWith('.xml')) {
+            resolve(new TextDecoder().decode(e.target.result));
+          } else {
+            alert('Unsupported file type!');
+            reject();
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function generateQuestions(text) {
+      const stopWords = new Set([
+        "the", "is", "in", "of", "and", "to", "a", "with", "that", "for", "on", "as", "are", "was", "at", "by", "an", "be",
+        "this","than","more","human","making","work","also", "from", "it", "or", "we", "you", "your", "our", "their", "they", "he", "she", "his", "her", "will", "can"
+      ]);
+      const wordFreq = {};
+      const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+      for (const word of words) {
+        if (!stopWords.has(word) && word.length > 3) {
+          wordFreq[word] = (wordFreq[word] || 0) + 1;
+        }
+      }
+
+      const sortedWords = Object.entries(wordFreq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(entry => entry[0]);
+
+      const questions = sortedWords.map(word => `What does the word "${word}" mean in this context?`);
+      questionsDisplay.innerHTML = questions.map(q => `<div>🔹 ${q}</div>`).join('');
+    }
+
+    let utterance;
+    function startReading() {
+      if (speechSynthesis.speaking) { speechSynthesis.resume(); return; }
+      utterance = new SpeechSynthesisUtterance(textDisplay.textContent);
+      const voiceIndex = document.getElementById('voiceSelect').value;
+      if (voices[voiceIndex]) utterance.voice = voices[voiceIndex];
+      utterance.onboundary = (event) => highlightText(event.charIndex);
+      speechSynthesis.speak(utterance);
+    }
+    function pauseReading() { speechSynthesis.pause(); }
+    function stopReading() { speechSynthesis.cancel(); removeHighlight(); }
+
+    function highlightText(index) {
+      const text = textDisplay.textContent;
+      textDisplay.innerHTML = text.slice(0, index) + '<span class="highlight">' + text[index] + '</span>' + text.slice(index+1);
+    }
+    function removeHighlight() {
+      textDisplay.innerHTML = textDisplay.textContent;
+    }
+
+    function copyText() {
+      navigator.clipboard.writeText(textDisplay.textContent).then(() => {
+        showPopup("Copied!");
+      });
+    }
+
+    function sendMessage() {
+      const chatInput = document.getElementById('chat-input');
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      const chatBox = document.getElementById('chat-messages');
+      chatBox.innerHTML += `<div class="user-message">You: ${message}</div>`;
+
+      const lowerMessage = message.toLowerCase();
+      const wordFound = uploadedText.toLowerCase().includes(lowerMessage);
+
+      let reply = wordFound
+        ? `The word "${message}" is discussed in the text. Here's a relevant sentence: "${findSentenceWithWord(lowerMessage)}"`
+        : `Sorry, the word "${message}" was not found in the uploaded text.`;
+
+      chatBox.innerHTML += `<div class="bot-message">Bot: ${reply}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      chatInput.value = '';
+    }
+
+    function findSentenceWithWord(word) {
+      const sentences = uploadedText.match(/[^.!?]+[.!?]+/g) || [];
+      for (let sentence of sentences) {
+        if (sentence.toLowerCase().includes(word)) {
+          return sentence.trim();
+        }
+      }
+      return "No relevant sentence found.";
+    }
+
+    function giveFeedback() {
+      const feedback = prompt("We'd love your feedback! Please type it below:");
+      if (feedback) {
+        console.log("User Feedback:", feedback); // You can later send this to a server or save it
+        showPopup("Thank you for your feedback!");
+      }
+    }
+
+    function showPopup(message) {
+      popup.textContent = message;
+      popup.style.display = 'block';
+      setTimeout(() => popup.style.display = 'none', 1500);
+    }
+  </script>
+</body>
+</html>
